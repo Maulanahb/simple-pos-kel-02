@@ -1,3 +1,4 @@
+
 @extends('layouts.app')
 
 @section('title', 'Kasir')
@@ -9,6 +10,7 @@
 <div
     x-data="{
         cart: [],
+        selectedProductId: null,
 
         addToCart(id, name, price) {
             this.cart.push({ id, name, price });
@@ -23,16 +25,23 @@
         }
     }"
 >
+
     <div class="grid grid-cols-3 gap-4">
 
         @foreach ($products as $product)
             <div
-                class="border rounded-md p-3 cursor-pointer"
-                @click="addToCart(
-                    {{ $product->id }},
-                    '{{ $product->name }}',
-                    {{ $product->price }}
-                )"
+                class="border rounded-md p-3 cursor-pointer transition"
+                :class="selectedProductId === {{ $product->id }}
+                    ? 'ring-2 ring-blue-500'
+                    : ''"
+                @click="
+                    selectedProductId = {{ $product->id }};
+                    addToCart(
+                        {{ $product->id }},
+                        @js($product->name),
+                        {{ $product->price }}
+                    )
+                "
             >
                 <p class="font-medium">{{ $product->name }}</p>
 
@@ -71,6 +80,7 @@
         </p>
 
     </div>
+
 </div>
 
 @endsection
