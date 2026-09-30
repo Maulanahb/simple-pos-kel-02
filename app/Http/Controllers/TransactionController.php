@@ -7,10 +7,13 @@ use App\Models\Product;
 class TransactionController extends Controller
 {
     public function create()
+    
     {
-        $products = Product::take(12)->get();
 
-        return view('pos.create', ['products' => $products]);
+    $products = Product::take(12)->get();
+
+    return view('pos.create', ['products' => $products]);
+
     }
 
     public function store()
