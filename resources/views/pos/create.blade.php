@@ -1,4 +1,3 @@
-
 @extends('layouts.app')
 
 @section('title', 'Kasir')
@@ -26,9 +25,11 @@
     }"
 >
 
+    {{-- Grid Produk --}}
     <div class="grid grid-cols-3 gap-4">
 
         @foreach ($products as $product)
+
             <div
                 class="border rounded-md p-3 cursor-pointer transition"
                 :class="selectedProductId === {{ $product->id }}
@@ -43,7 +44,10 @@
                     )
                 "
             >
-                <p class="font-medium">{{ $product->name }}</p>
+
+                <p class="font-medium">
+                    {{ $product->name }}
+                </p>
 
                 @if ($product->stock < 10)
                     <span class="bg-amber-100 text-amber-700 px-2 py-1 rounded text-xs">
@@ -54,15 +58,25 @@
                 <p class="text-sm text-slate-500">
                     Rp {{ number_format($product->price) }}
                 </p>
+
             </div>
+
         @endforeach
 
     </div>
 
+    {{-- Pagination Produk --}}
+    <div class="mt-4">
+        {{ $products->links() }}
+    </div>
+
+    {{-- Keranjang --}}
     <div class="mt-4 border-t pt-3">
 
         <template x-for="item in cart" :key="item.id">
+
             <div class="flex items-center justify-between mb-2">
+
                 <p x-text="item.name + ' - Rp ' + item.price"></p>
 
                 <button
@@ -72,11 +86,14 @@
                 >
                     Hapus
                 </button>
+
             </div>
+
         </template>
 
         <p class="font-semibold mt-2">
-            Subtotal: Rp <span x-text="subtotal()"></span>
+            Subtotal:
+            Rp <span x-text="subtotal()"></span>
         </p>
 
     </div>
