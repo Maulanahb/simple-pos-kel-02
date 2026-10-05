@@ -10,6 +10,8 @@
             &middot;
             Kasir: {{ $transaction->user->name }}
             &middot;
+            {{ $transaction->details->sum('qty') }} item
+            &middot;
             {{ $transaction->created_at->format('d M Y H:i') }}
             &middot;
             Rp {{ number_format($transaction->total) }}
