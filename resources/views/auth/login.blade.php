@@ -50,9 +50,15 @@
         </form>
 
         <p class="mt-6 text-xs text-slate-500">
-            Akun demo: admin@pos.test atau kasir@pos.test, kata sandi
+            Akun demo: admin@pos.test, kasir@pos.test, atau manager@pos.test, kata sandi
             <code>password</code>.
         </p>
+
+        <div class="mt-4 pt-4 border-t border-slate-100 text-center">
+            <a href="{{ route('info') }}" class="text-xs text-indigo-600 hover:text-indigo-800 hover:underline inline-flex items-center gap-1">
+                <span>ℹ️</span> Informasi Sistem Simple POS
+            </a>
+        </div>
     </div>
 </body>
 </html>
