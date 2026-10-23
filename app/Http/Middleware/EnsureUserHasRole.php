@@ -17,7 +17,8 @@ class EnsureUserHasRole
             ! $request->user() ||
             ! in_array($request->user()->role, $roles, true)
         ) {
-            abort(403, 'Anda tidak memiliki akses untuk halaman ini.');
+            $roleList = implode(', ', $roles);
+            abort(403, "Halaman ini hanya untuk peran {$roleList}.");
         }
 
         return $next($request);
