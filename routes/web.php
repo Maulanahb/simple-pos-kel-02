@@ -15,10 +15,18 @@ Route::get('/', function () {
     return redirect()->route('pos.create');
 });
 
-// Autentikasi untuk tamu
+// Halaman dan autentikasi untuk tamu (guest)
 Route::middleware('guest')->group(function () {
     Route::get('/login', [LoginController::class, 'create'])->name('login');
     Route::post('/login', [LoginController::class, 'store'])->name('login.store');
+
+    // Halaman informasi khusus tamu (belum login)
+    Route::get('/info', function () {
+        return view('info');
+    })->name('info');
+    Route::get('/informasi', function () {
+        return redirect()->route('info');
+    });
 });
 
 // Area terproteksi autentikasi

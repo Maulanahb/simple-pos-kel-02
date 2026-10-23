@@ -10,6 +10,10 @@ health: '/up',
 $middleware->alias([
 'role' => \App\Http\Middleware\EnsureUserHasRole::class,
 ]);
+$middleware->redirectTo(
+    guests: '/login',
+    users: '/pos',
+);
 })->withExceptions(function (Exceptions $exceptions): void {
 //
 })->create();
