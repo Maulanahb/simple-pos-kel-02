@@ -57,3 +57,65 @@ If you discover a security vulnerability within Laravel, please send an e-mail t
 ## License
 
 The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+
+# Jobsheet 7 
+## Skenario Uji Manual Berdasarkan Peran
+
+### 1. Admin
+
+**Tujuan:** Memastikan admin dapat mengakses halaman produk dan kategori.
+
+**Langkah pengujian:**
+1. Login menggunakan email `admin@pos.test` dan kata sandi `password`.
+2. Buka halaman `/products`.
+3. Buka halaman `/categories`.
+
+**Hasil yang diharapkan:**
+- Login berhasil.
+- Halaman produk dan kategori dapat dibuka tanpa error 403.
+- Menu Produk dan Kategori tampil pada navigasi.
+
+### 2. Kasir
+
+**Tujuan:** Memastikan kasir dapat menggunakan halaman kasir, tetapi tidak dapat mengakses halaman admin.
+
+**Langkah pengujian:**
+1. Login menggunakan email `kasir@pos.test` dan kata sandi `password`.
+2. Buka halaman `/pos`.
+3. Buka halaman `/products`.
+4. Buka halaman `/categories`.
+
+**Hasil yang diharapkan:**
+- Login berhasil.
+- Halaman kasir dapat dibuka.
+- Halaman produk dan kategori menampilkan error 403.
+- Menu Produk dan Kategori tidak tampil pada navigasi.
+
+### 3. Manager
+
+**Tujuan:** Memastikan manager dapat mengakses transaksi, tetapi tidak dapat mengakses halaman produk.
+
+**Langkah pengujian:**
+1. Login menggunakan akun dengan peran `manager`.
+2. Buka halaman `/transactions`.
+3. Buka halaman `/products`.
+
+**Hasil yang diharapkan:**
+- Login berhasil.
+- Halaman transaksi dapat dibuka.
+- Halaman produk menampilkan error 403.
+
+### 4. Tamu (Belum Login)
+
+**Tujuan:** Memastikan tamu tidak dapat mengakses halaman yang memerlukan autentikasi.
+
+**Langkah pengujian:**
+1. Logout dari aplikasi.
+2. Buka halaman `/products`.
+3. Buka halaman `/pos`.
+4. Buka halaman `/login`.
+
+**Hasil yang diharapkan:**
+- Halaman produk dan kasir mengarahkan pengguna ke halaman login.
+- Halaman login dapat dibuka oleh tamu.
+- Tamu tidak dapat mengakses halaman yang memerlukan autentikasi sebelum login.
