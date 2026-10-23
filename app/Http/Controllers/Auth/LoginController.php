@@ -38,7 +38,15 @@ class LoginController extends Controller
 
         $request->session()->regenerate();
 
+
+        $user = Auth::user();
+
+        if ($user->role === 'manager') {
+            return redirect()->intended(route('transactions.index'));
+        }
+
         return redirect()->intended(route('pos.create'));
+
     }
 
     public function destroy(Request $request): RedirectResponse
