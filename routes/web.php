@@ -1,4 +1,3 @@
-
 <?php
 
 use App\Http\Controllers\Auth\LoginController;
@@ -8,54 +7,56 @@ use App\Http\Controllers\ReportController;
 use App\Http\Controllers\TransactionController;
 use Illuminate\Support\Facades\Route;
 
+// Redirect root
 Route::get('/', function () {
+    if (auth()->check() && auth()->user()->role === 'manager') {
+        return redirect()->route('transactions.index');
+    }
+
     return redirect()->route('pos.create');
 });
 
+// Halaman dan autentikasi untuk tamu (guest)
 Route::middleware('guest')->group(function () {
-    Route::get('/login', [LoginController::class, 'create'])
-        ->name('login');
+    Route::get('/login', [LoginController::class, 'create'])->name('login');
+    Route::post('/login', [LoginController::class, 'store'])->name('login.store');
 
-    Route::post('/login', [LoginController::class, 'store']);
+    // Halaman informasi khusus tamu (belum login)
+    Route::get('/info', function () {
+        return view('info');
+    })->name('info');
+    Route::get('/informasi', function () {
+        return redirect()->route('info');
+    });
 });
 
-Route::post('/logout', [LoginController::class, 'destroy'])
-    ->middleware('auth')
-    ->name('logout');
-
+// Area terproteksi autentikasi
 Route::middleware('auth')->group(function () {
-    Route::get('/pos', [TransactionController::class, 'create'])
-        ->name('pos.create');
+    Route::post('/logout', [LoginController::class, 'destroy'])->name('logout');
 
-    Route::post('/pos', [TransactionController::class, 'store'])
-        ->name('transactions.store');
+    // Transaksi (Admin, Kasir, dan Manager)
+    Route::middleware('role:admin,kasir,manager')->group(function () {
+        Route::get('/transactions', [TransactionController::class, 'index'])->name('transactions.index');
+        Route::get('/transactions/{transaction}', [TransactionController::class, 'show'])->name('transactions.show');
+    });
 
-    Route::get('/transactions', [TransactionController::class, 'index'])
-        ->name('transactions.index');
+    // POS Kasir (Khusus Admin dan Kasir)
+    Route::middleware('role:admin,kasir')->group(function () {
+        Route::get('/pos', [TransactionController::class, 'create'])->name('pos.create');
+        Route::post('/pos', [TransactionController::class, 'store'])->name('transactions.store');
+    });
 
+    // Produk, Kategori, Laporan, dan Import (Khusus Admin)
     Route::middleware('role:admin')->group(function () {
-        Route::resource('categories', CategoryController::class)
-            ->except('show');
+        Route::resource('categories', CategoryController::class)->except('show');
+        Route::resource('products', ProductController::class)->except(['show', 'destroy']);
 
-        Route::resource('products', ProductController::class)
-            ->except(['show', 'destroy']);
+        Route::get('/reports', [ReportController::class, 'index'])->name('reports.index');
+        Route::get('/reports/export/csv', [ReportController::class, 'exportCsv'])->name('reports.export.csv');
+        Route::get('/reports/export/xlsx', [ReportController::class, 'exportExcel'])->name('reports.export.xlsx');
+        Route::get('/reports/export/pdf', [ReportController::class, 'exportPdf'])->name('reports.export.pdf');
 
-        Route::get('/reports', [ReportController::class, 'index'])
-            ->name('reports.index');
-
-        Route::get('/reports/export/csv', [ReportController::class, 'exportCsv'])
-            ->name('reports.export.csv');
-
-        Route::get('/reports/export/xlsx', [ReportController::class, 'exportExcel'])
-            ->name('reports.export.xlsx');
-
-        Route::get('/reports/export/pdf', [ReportController::class, 'exportPdf'])
-            ->name('reports.export.pdf');
-
-        Route::get('/import', [ReportController::class, 'importForm'])
-            ->name('import.create');
-
-        Route::post('/import', [ReportController::class, 'import'])
-            ->name('import.store');
+        Route::get('/import', [ReportController::class, 'importForm'])->name('import.create');
+        Route::post('/import', [ReportController::class, 'import'])->name('import.store');
     });
 });
