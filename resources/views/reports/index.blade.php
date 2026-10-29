@@ -5,29 +5,113 @@
 @section('content')
     <h1 class="text-lg font-semibold mb-4">Laporan Penjualan</h1>
 
-    <form method="GET" action="{{ route('reports.index') }}" class="flex gap-3 items-end mb-6">
+    <form method="GET"
+          action="{{ route('reports.index') }}"
+          class="flex flex-wrap gap-3 items-end mb-6">
+
         <label class="block">
             <span class="text-sm font-medium">Dari</span>
-            <input type="date" name="from" value="{{ $from }}" class="mt-1 block border rounded-md px-3 py-2 text-sm">
+            <input
+                type="date"
+                name="from"
+                value="{{ $from }}"
+                class="mt-1 block border rounded-md px-3 py-2 text-sm"
+            >
         </label>
 
         <label class="block">
             <span class="text-sm font-medium">Sampai</span>
-            <input type="date" name="to" value="{{ $to }}" class="mt-1 block border rounded-md px-3 py-2 text-sm">
+            <input
+                type="date"
+                name="to"
+                value="{{ $to }}"
+                class="mt-1 block border rounded-md px-3 py-2 text-sm"
+            >
         </label>
 
-        <button type="submit" class="bg-slate-900 text-white px-4 py-2 rounded-md text-sm">
+        <label class="block">
+            <span class="text-sm font-medium">Kategori</span>
+            <select
+                name="category_id"
+                class="mt-1 block border rounded-md px-3 py-2 text-sm"
+            >
+                <option value="">Semua Kategori</option>
+
+                @foreach ($categories as $category)
+                    <option
+                        value="{{ $category->id }}"
+                        @selected((string) $categoryId === (string) $category->id)
+                    >
+                        {{ $category->name }}
+                    </option>
+                @endforeach
+            </select>
+        </label>
+
+        <button
+            type="submit"
+            class="bg-slate-900 text-white px-4 py-2 rounded-md text-sm"
+        >
             Filter
         </button>
 
-        <a href="{{ route('reports.export.csv', ['from' => $from, 'to' => $to]) }}" class="bg-blue-600 text-white px-4 py-2 rounded-md text-sm">Export CSV</a>
-        <a href="{{ route('reports.export.xlsx', ['from' => $from, 'to' => $to]) }}" class="bg-green-600 text-white px-4 py-2 rounded-md text-sm">Export Excel</a>
-        <a href="{{ route('reports.export.pdf', ['from' => $from, 'to' => $to]) }}"class="bg-red-600 text-white px-4 py-2 rounded-md text-sm">Export PDF</a>
+        <a
+            href="{{ route('reports.index') }}"
+            class="border px-4 py-2 rounded-md text-sm"
+        >
+            Reset
+        </a>
+
+        <a
+            href="{{ route('reports.export.csv', [
+                'from' => $from,
+                'to' => $to,
+                'category_id' => $categoryId,
+            ]) }}"
+            class="bg-blue-600 text-white px-4 py-2 rounded-md text-sm"
+        >
+            Export CSV
+        </a>
+
+        <a
+            href="{{ route('reports.export.xlsx', [
+                'from' => $from,
+                'to' => $to,
+                'category_id' => $categoryId,
+            ]) }}"
+            class="bg-green-600 text-white px-4 py-2 rounded-md text-sm"
+        >
+            Export Excel
+        </a>
+
+        <a
+            href="{{ route('reports.export.pdf', [
+                'from' => $from,
+                'to' => $to,
+                'category_id' => $categoryId,
+            ]) }}"
+            class="bg-red-600 text-white px-4 py-2 rounded-md text-sm"
+        >
+            Export PDF
+        </a>
     </form>
 
     <div class="bg-white border rounded-md p-4 max-w-sm">
         <p class="text-sm text-slate-500">Total Penjualan</p>
-        <p class="text-2xl font-semibold">Rp {{ number_format($totalPenjualan) }}</p>
-        <p class="text-sm text-slate-500 mt-2">{{ $jumlahTransaksi }} transaksi</p>
+
+        <p class="text-2xl font-semibold">
+            Rp {{ number_format($totalPenjualan, 0, ',', '.') }}
+        </p>
+
+        <p class="text-sm text-slate-500 mt-2">
+            {{ $jumlahTransaksi }} transaksi
+        </p>
+
+        @if ($categoryId)
+            <p class="text-sm text-slate-500 mt-1">
+                Kategori:
+                {{ $categories->firstWhere('id', $categoryId)?->name ?? '-' }}
+            </p>
+        @endif
     </div>
 @endsection
