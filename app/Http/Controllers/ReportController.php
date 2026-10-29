@@ -3,8 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Exports\SalesReportExport;
+use App\Jobs\ProcessProductImport;
+use App\Models\Category;
 use App\Models\Transaction;
-use App\Jobs\ProcessProductImport; 
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\RedirectResponse;
@@ -20,31 +21,36 @@ class ReportController extends Controller
     public function index(Request $request): View
     {
         [$from, $to] = $this->resolveDateRange($request);
-        $query = $this->filteredQuery($from, $to);
+        $categoryId = $this->resolveCategoryId($request);
+        $query = $this->filteredQuery($from, $to, $categoryId);
 
         return view('reports.index', [
             'totalPenjualan' => $query->sum('total'),
             'jumlahTransaksi' => $query->count(),
             'from' => $from->toDateString(),
             'to' => $to->toDateString(),
+            'categories' => Category::orderBy('name')->get(),
+            'categoryId' => $categoryId,
         ]);
     }
 
     public function exportCsv(Request $request): StreamedResponse
     {
         [$from, $to] = $this->resolveDateRange($request);
-        $query = $this->filteredQuery($from, $to);
+        $categoryId = $this->resolveCategoryId($request);
+        $query = $this->filteredQuery($from, $to, $categoryId);
 
         return response()->streamDownload(function () use ($query) {
             $out = fopen('php://output', 'w');
+
             fputcsv($out, ['ID', 'Tanggal', 'Kasir', 'Total']);
 
-            foreach ($query->lazyById() as $t) {
+            foreach ($query->lazyById() as $transaction) {
                 fputcsv($out, [
-                    $t->id,
-                    $t->created_at,
-                    $t->user->name ?? '-',
-                    $t->total,
+                    $transaction->id,
+                    $transaction->created_at,
+                    $transaction->user->name ?? '-',
+                    $transaction->total,
                 ]);
             }
 
@@ -55,9 +61,12 @@ class ReportController extends Controller
     public function exportExcel(Request $request): BinaryFileResponse
     {
         [$from, $to] = $this->resolveDateRange($request);
+        $categoryId = $this->resolveCategoryId($request);
 
         return Excel::download(
-            new SalesReportExport($this->filteredQuery($from, $to)),
+            new SalesReportExport(
+                $this->filteredQuery($from, $to, $categoryId)
+            ),
             'laporan-penjualan.xlsx'
         );
     }
@@ -65,15 +74,17 @@ class ReportController extends Controller
     public function exportPdf(Request $request): Response
     {
         [$from, $to] = $this->resolveDateRange($request);
-        $query = $this->filteredQuery($from, $to);
+        $categoryId = $this->resolveCategoryId($request);
+        $query = $this->filteredQuery($from, $to, $categoryId);
 
         $pdf = Pdf::loadView('reports.pdf', [
             'totalPenjualan' => $query->sum('total'),
             'jumlahTransaksi' => $query->count(),
-            'transactions' => $this->filteredQuery($from, $to)
-                ->latest()
-                ->limit(50)
-                ->get(),
+            'transactions' => $this->filteredQuery(
+                $from,
+                $to,
+                $categoryId
+            )->latest()->limit(50)->get(),
             'from' => $from->toDateString(),
             'to' => $to->toDateString(),
         ]);
@@ -96,7 +107,10 @@ class ReportController extends Controller
 
         ProcessProductImport::dispatch($path);
 
-        return back()->with('success', 'Import sedang diproses di background.');
+        return back()->with(
+            'success',
+            'Import sedang diproses di background.'
+        );
     }
 
     private function resolveDateRange(Request $request): array
@@ -110,9 +124,34 @@ class ReportController extends Controller
         return [$from, $to];
     }
 
-    private function filteredQuery($from, $to): Builder
+    private function resolveCategoryId(Request $request): ?int
     {
+        $validated = $request->validate([
+            'category_id' => [
+                'nullable',
+                'integer',
+                'exists:categories,id',
+            ],
+        ]);
+
+        if (empty($validated['category_id'])) {
+            return null;
+        }
+
+        return (int) $validated['category_id'];
+    }
+
+    private function filteredQuery(
+        $from,
+        $to,
+        ?int $categoryId = null
+    ): Builder {
         return Transaction::with('user')
-            ->whereBetween('created_at', [$from, $to]);
+            ->whereBetween('created_at', [$from, $to])
+            ->when($categoryId, function (Builder $query) use ($categoryId) {
+                $query->whereHas('details.product', function (Builder $productQuery) use ($categoryId) {
+                    $productQuery->where('category_id', $categoryId);
+                });
+            });
     }
 }
