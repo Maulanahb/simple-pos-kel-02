@@ -2,6 +2,7 @@
 
 namespace App\Jobs;
 
+use App\Models\ImportError;
 use App\Models\Product;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
@@ -24,8 +25,15 @@ class ProcessProductImport implements ShouldQueue
         $rows = array_map('str_getcsv', $lines);
         $header = array_shift($rows);
 
-        foreach ($rows as $row) {
+        foreach ($rows as $index => $row) {
+            $rowNumber = $index + 2;
+
             if (count($row) !== count($header)) {
+                ImportError::create([
+                    'row_number' => $rowNumber,
+                    'error_message' => 'Jumlah kolom tidak cocok dengan header (' . count($row) . ' kolom terdeteksi, dibutuhkan ' . count($header) . ' kolom).',
+                    'raw_data' => implode(',', $row),
+                ]);
                 continue;
             }
 
@@ -36,6 +44,11 @@ class ProcessProductImport implements ShouldQueue
             ]);
 
             if ($validator->fails()) {
+                ImportError::create([
+                    'row_number' => $rowNumber,
+                    'error_message' => implode('; ', $validator->errors()->all()),
+                    'raw_data' => implode(',', $row),
+                ]);
                 continue;
             }
 
