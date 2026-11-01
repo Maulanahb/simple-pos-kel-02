@@ -16,6 +16,7 @@ use Illuminate\View\View;
 use Maatwebsite\Excel\Facades\Excel;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\HttpFoundation\StreamedResponse;
+use Illuminate\Support\Facades\DB;
 
 class ReportController extends Controller
 {
@@ -77,10 +78,28 @@ class ReportController extends Controller
         [$from, $to] = $this->resolveDateRange($request);
         $categoryId = $this->resolveCategoryId($request);
         $query = $this->filteredQuery($from, $to, $categoryId);
+        $produkTerlaris = DB::table('transaction_details')
+            ->join('products', 'transaction_details.product_id', '=', 'products.id')
+            ->join('transactions', 'transaction_details.transaction_id', '=', 'transactions.id')
+            ->whereBetween('transactions.created_at', [$from, $to])
+            ->when($categoryId, function ($q) use ($categoryId) {
+                $q->where('products.category_id', $categoryId);
+            })
+            ->select(
+                'products.name',
+                DB::raw('SUM(transaction_details.qty) as total_terjual'),
+                DB::raw('SUM(transaction_details.subtotal) as total_pendapatan')
+            )
+            ->groupBy('products.id', 'products.name')
+            ->orderByDesc('total_terjual')
+            ->limit(10)
+            ->get();
 
         $pdf = Pdf::loadView('reports.pdf', [
             'totalPenjualan' => $query->sum('total'),
             'jumlahTransaksi' => $query->count(),
+            'produkTerlaris' => $produkTerlaris,
+            'category' => $categoryId ? Category::find($categoryId) : null,
             'transactions' => $this->filteredQuery(
                 $from,
                 $to,
