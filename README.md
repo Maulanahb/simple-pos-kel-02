@@ -119,3 +119,38 @@ The Laravel framework is open-sourced software licensed under the [MIT license](
 - Halaman produk dan kasir mengarahkan pengguna ke halaman login.
 - Halaman login dapat dibuka oleh tamu.
 - Tamu tidak dapat mengakses halaman yang memerlukan autentikasi sebelum login.
+
+
+# Jobsheet 9
+## Analisis Proses yang Layak Dipindah ke Queued Job
+
+### 1. Export Laporan Penjualan ke Excel
+
+**Proses yang dipilih:** `ReportController@exportExcel` untuk rentang tanggal yang besar.
+
+**Alasan:**
+1. Waktu request panjang. Export berjalan di dalam request HTTP, sehingga admin menunggu di browser sampai file .xlsx selesai dibuat. Pada data besar (pengukuran kami memakai sekitar 52.500 transaksi), proses ini bisa melewati batas waktu eksekusi PHP dan berakhir error. Pembuatan .xlsx juga lebih lambat daripada CSV karena library harus menyusun format zip berisi XML.
+2. Memblokir pengguna. Selama menunggu, halaman tidak merespons, dan jika koneksi terputus hasilnya hilang.
+3. Aman diulang. Export hanya membaca data dan menulis file, tanpa mengubah data bisnis, sehingga job yang gagal bisa dicoba ulang (`$tries`, `$backoff`) tanpa efek samping.
+
+**Rancangan singkat:**
+1. Controller memvalidasi rentang tanggal, mengirim job ke queue, lalu langsung merespons "Laporan sedang diproses".
+2. Job membuat file dengan query yang sama (`filteredQuery()`) dan menyimpannya ke storage.
+3. Admin mengunduh file dari halaman laporan setelah selesai.
+4. Job diberi `$tries`, `$backoff`, dan `$timeout` seperti `ProcessProductImport`. Job yang gagal tercatat di `failed_jobs`.
+
+### 2. Proses yang Sengaja Tidak Dipindah
+
+**Penyimpanan transaksi kasir (`TransactionController@store`):**
+- Tetap sinkron karena proses ini memeriksa stok, menyimpan transaksi beserta detailnya dalam satu `DB::transaction`, lalu mengurangi stok.
+- Kasir harus langsung tahu hasilnya, dan stok harus konsisten saat itu juga. Jika dikerjakan di background, transaksi bisa dilaporkan berhasil padahal stok sudah habis.
+
+**Export CSV (`ReportController@exportCsv`):**
+- Sudah memakai streaming (`streamDownload()` dan `lazyById()`), sehingga memori dan waktu tunggunya sudah aman tanpa queue.
+
+**Export PDF (`ReportController@exportPdf`):**
+- Hanya memuat ringkasan dan 50 transaksi terbaru, sehingga prosesnya ringan.
+
+### 3. Kesimpulan
+
+Queue cocok untuk proses yang lama, aman diulang, dan tidak harus selesai saat itu juga, seperti export Excel data besar dan import produk (`ProcessProductImport`). Proses yang hasilnya harus langsung dipastikan kepada pengguna, seperti penyimpanan transaksi kasir, tetap dijalankan secara sinkron.
