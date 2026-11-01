@@ -12,8 +12,12 @@
     @endif
 
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
-        <div class="bg-white border rounded-md p-5 shadow-sm lg:col-span-1">
-            <h2 class="text-sm font-semibold text-slate-800 mb-3">Upload File CSV</h2>
+    <div class="space-y-4 lg:col-span-1">
+        {{-- Import Manual --}}
+        <div class="bg-white border rounded-md p-5 shadow-sm">
+            <h2 class="text-sm font-semibold text-slate-800 mb-3">
+                Import Manual
+            </h2>
 
             <form
                 method="POST"
@@ -32,17 +36,10 @@
                         class="mt-1 block w-full text-sm"
                         required
                     >
-
-                    @error('csv')
-                        <p class="text-sm text-red-600 mt-1">
-                            {{ $message }}
-                        </p>
-                    @enderror
                 </label>
 
                 <p class="text-xs text-slate-500 mb-4">
-                    Column yang dibutuhkan:
-                    <code>name</code>,
+                    Kolom: <code>name</code>,
                     <code>category_id</code>,
                     <code>price</code>.
                 </p>
@@ -51,10 +48,53 @@
                     type="submit"
                     class="bg-slate-900 text-white px-4 py-2 rounded-md text-sm hover:bg-slate-800"
                 >
-                    Import
+                    Import Manual
                 </button>
             </form>
         </div>
+
+        {{-- Import Laravel Excel --}}
+        <div class="bg-white border rounded-md p-5 shadow-sm">
+            <h2 class="text-sm font-semibold text-slate-800 mb-3">
+                Import Laravel Excel
+            </h2>
+
+            <form
+                method="POST"
+                action="{{ route('import.excel') }}"
+                enctype="multipart/form-data"
+            >
+                @csrf
+
+                <label class="block mb-3">
+                    <span class="text-sm font-medium">File CSV</span>
+
+                    <input
+                        type="file"
+                        name="csv"
+                        accept=".csv"
+                        class="mt-1 block w-full text-sm"
+                        required
+                    >
+                </label>
+
+                <p class="text-xs text-slate-500 mb-4">
+                    Menggunakan Laravel Excel dengan
+                    <code>ToModel</code>,
+                    <code>WithHeadingRow</code>, dan
+                    <code>WithChunkReading</code>.
+                </p>
+
+                <button
+                    type="submit"
+                    class="bg-blue-600 text-white px-4 py-2 rounded-md text-sm hover:bg-blue-700"
+                >
+                    Import Laravel Excel
+                </button>
+            </form>
+        </div>
+    </div>
+
 
         <div class="lg:col-span-2">
             <div class="flex items-center justify-between mb-3">

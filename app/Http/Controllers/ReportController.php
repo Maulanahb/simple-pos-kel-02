@@ -123,6 +123,22 @@ class ReportController extends Controller
         );
     }
 
+    public function importExcel(Request $request): RedirectResponse
+    {
+        $request->validate([
+            'csv' => ['required', 'file', 'mimes:csv,txt'],
+        ]);
+
+        $import = new \App\Imports\ProductImport();
+
+        Excel::import($import, $request->file('csv'));
+
+        return back()->with(
+            'success',
+            'Import menggunakan Laravel Excel berhasil.'
+        );
+    }
+
     private function resolveDateRange(Request $request): array
     {
         $from = $request->date('from')?->startOfDay()
