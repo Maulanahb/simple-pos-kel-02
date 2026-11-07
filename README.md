@@ -154,3 +154,13 @@ The Laravel framework is open-sourced software licensed under the [MIT license](
 ### 3. Kesimpulan
 
 Queue cocok untuk proses yang lama, aman diulang, dan tidak harus selesai saat itu juga, seperti export Excel data besar dan import produk (`ProcessProductImport`). Proses yang hasilnya harus langsung dipastikan kepada pengguna, seperti penyimpanan transaksi kasir, tetap dijalankan secara sinkron.
+
+## Pembagian Tugas
+
+| No | Nama Anggota | Langkah Wajib & Tantangan yang Dikerjakan | Hash Commit | PR Merge Hash |
+| :---: | :--- | :--- | :---: | :---: |
+| 1. | **Daysyani Sophi** (`daysyani`) | • **Langkah 6:** Laporan PDF dengan DomPDF<br>• **Tantangan Mandiri:** Import produk dengan Laravel Excel | `5041e96`<br>`741f101` | `79a8a27`<br>`cef2304` |
+| 2. | **Ayin iswati (Gargarina)** (`ayinanda`) | • **Langkah 2:** Laporan penjualan dengan filter tanggal<br>• **Langkah 7:** Import produk dari CSV (aman diulang)<br>• **Tantangan Mandiri:** Tabel produk terlaris pada laporan PDF | `17f10e1`<br>`d11cd67`<br>`95115a9` | `0a261ab`<br>`5767cce`<br>`f891026` |
+| 3. | **Zaky Dawamul** (`Zakydawamul`) | • **Langkah 3:** Export laporan ke CSV (streaming)<br>• **Langkah 8:** Memindahkan import ke queued job<br>• **Tantangan Mandiri:** Analisis proses queued job di README | `cbf3943`<br>`eccdac2`<br>`7b4faa7` | `fb08ac2`<br>`275548e`<br>`1a764d4` |
+| 4. | **Nayla Annora** (`annora1304`) | • **Langkah 4:** Pengukuran memori `get()` vs `lazyById()`<br>• **Tantangan Mandiri:** Tambah filter kategori pada laporan | `a085b3d`<br>`81fbc30` | `8ee5726`<br>`0ddbe07` |
+| 5. | **Maulana** (`Maulanahb`) | • **Langkah 5:** Export ke Excel dengan Laravel Excel<br>• **Tantangan Mandiri:** Catat row gagal import di tabel `import_errors` | `dad179a`<br>`afc4587` | `7741ac0`<br>`17b18ca` |
