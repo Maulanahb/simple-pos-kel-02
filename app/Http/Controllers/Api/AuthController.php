@@ -20,7 +20,11 @@ class AuthController extends Controller
         }
 
         $user = Auth::user();
-        $token = $user->createToken('mobile-kasir')->plainTextToken;
+        $token = $user->createToken(
+            'mobile-kasir',
+            ['products:read', 'transactions:create', 'transactions:read'],
+            now()->addDay(),
+        )->plainTextToken;
 
         return response()->json(['token' => $token]);
     }
@@ -28,6 +32,7 @@ class AuthController extends Controller
     public function logout(Request $request)
     {
         $request->user()->currentAccessToken()->delete();
+
         return response()->json(['message' => 'Logout berhasil.']);
     }
 }
