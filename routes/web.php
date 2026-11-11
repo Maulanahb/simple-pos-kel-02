@@ -8,6 +8,10 @@ use App\Http\Controllers\ReportController;
 use App\Http\Controllers\TransactionController;
 use Illuminate\Support\Facades\Route;
 
+Route::get('/info', function () {
+    return view('info'); // Sesuaikan dengan nama view halaman info Anda jika ada
+})->name('info');
+
 Route::get('/', function () {
     return redirect()->route('pos.create');
 });
