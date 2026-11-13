@@ -22,7 +22,7 @@ class AuthController extends Controller
         $user = Auth::user();
         $token = $user->createToken(
             'mobile-kasir',
-            ['products:read', 'transactions:create', 'transactions:read'],
+            ['categories:read', 'products:read', 'transactions:create', 'transactions:read'],
             now()->addDay(),
         )->plainTextToken;
 
