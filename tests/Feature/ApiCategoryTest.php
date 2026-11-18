@@ -15,14 +15,14 @@ class ApiCategoryTest extends TestCase
 
     public function test_guest_cannot_list_categories(): void
     {
-        $this->getJson('/api/categories')->assertUnauthorized();
+        $this->getJson('/api/v1/categories')->assertUnauthorized();
     }
 
     public function test_token_without_ability_is_forbidden(): void
     {
         Sanctum::actingAs(User::factory()->create(), ['products:read']);
 
-        $this->getJson('/api/categories')->assertForbidden();
+        $this->getJson('/api/v1/categories')->assertForbidden();
     }
 
     public function test_authenticated_user_with_ability_can_list_categories(): void
@@ -34,7 +34,7 @@ class ApiCategoryTest extends TestCase
 
         Sanctum::actingAs(User::factory()->create(), ['categories:read']);
 
-        $response = $this->getJson('/api/categories')
+        $response = $this->getJson('/api/v1/categories')
             ->assertOk()
             ->assertJsonStructure([
                 'data' => [
@@ -63,13 +63,13 @@ class ApiCategoryTest extends TestCase
         ]);
         Category::create(['name' => 'Snack']);
 
-        $token = $this->postJson('/api/login', [
+        $token = $this->postJson('/api/v1/login', [
             'email' => 'kasir@pos.test',
             'password' => 'password',
         ])->assertOk()->json('token');
 
         $this->withToken($token)
-            ->getJson('/api/categories')
+            ->getJson('/api/v1/categories')
             ->assertOk()
             ->assertJsonPath('data.0.name', 'Snack');
     }
@@ -86,12 +86,12 @@ class ApiCategoryTest extends TestCase
 
         Sanctum::actingAs(User::factory()->create(), ['categories:read']);
 
-        $this->getJson('/api/categories?q=Minum')
+        $this->getJson('/api/v1/categories?q=Minum')
             ->assertOk()
             ->assertJsonCount(1, 'data')
             ->assertJsonPath('data.0.name', 'Minuman');
 
-        $this->getJson('/api/categories?sort=-products_count&per_page=2')
+        $this->getJson('/api/v1/categories?sort=-products_count&per_page=2')
             ->assertOk()
             ->assertJsonCount(2, 'data')
             ->assertJsonPath('meta.per_page', 2)
@@ -99,11 +99,11 @@ class ApiCategoryTest extends TestCase
             ->assertJsonPath('data.0.name', 'Minuman')
             ->assertJsonPath('data.1.name', 'Snack');
 
-        $this->getJson('/api/categories?per_page=500')
+        $this->getJson('/api/v1/categories?per_page=500')
             ->assertUnprocessable()
             ->assertJsonValidationErrors('per_page');
 
-        $this->getJson('/api/categories?sort=invalid')
+        $this->getJson('/api/v1/categories?sort=invalid')
             ->assertUnprocessable()
             ->assertJsonValidationErrors('sort');
     }
