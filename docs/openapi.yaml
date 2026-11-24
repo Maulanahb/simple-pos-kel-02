@@ -162,3 +162,20 @@ components:
     bearerAuth:
       type: http
       scheme: bearer
+
+# ==============================================================================
+# Perbandingan Pengalaman Pengujian API: GUI Client (Bruno / Postman) vs CLI (curl)
+# ==============================================================================
+# Menguji ketiga endpoint (/api/v1/login, /api/v1/products, dan /api/v1/transactions)
+# menggunakan GUI HTTP Client (seperti Bruno / Postman) memberikan pengalaman pengujian
+# yang jauh lebih ergonomis dan terstruktur dibanding curl pada CLI. Pada GUI client,
+# pengaturan header (Authorization Bearer Token, Idempotency-Key), query parameter, dan
+# JSON request body dapat dikelola lewat antarmuka visual tanpa repot melakukan manual
+# escaping tanda kutip (\"...\") atau terkendala karakter penyambung baris yang sering
+# bermasalah di Command Prompt/PowerShell Windows. Fitur environment variables juga sangat
+# mempermudah alur pengujian berantai, seperti menyalin token hasil login ke request produk
+# dan transaksi secara dinamis. Respons JSON langsung diformat rapi (pretty-print) lengkap
+# dengan status code, waktu respons, dan header yang mudah diinspeksi. Di sisi lain, curl
+# tetap unggul dalam kecepatan eksekusi cepat langsung dari terminal tanpa perlu membuka
+# aplikasi terpisah, sangat ringan, dan paling ideal untuk scripting otomatisasi maupun CI/CD.
+
