@@ -1,0 +1,24 @@
+meta {
+  name: 02 - Get Products
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{baseUrl}}/api/v1/products?per_page=5&sort=-price
+  body: none
+  auth: bearer
+}
+
+params:query {
+  per_page: 5
+  sort: -price
+}
+
+headers {
+  Accept: application/json
+}
+
+auth:bearer {
+  token: {{token}}
+}
